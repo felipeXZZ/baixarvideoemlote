@@ -1,4 +1,12 @@
-BAIXA EM LOTE — como colocar no ar (Vercel, grátis)
+BAIXA EM LOTE
+
+Rodar no seu PC (para testar e editar)
+  1. Precisa ter o Node.js 18 ou mais novo (nodejs.org)
+  2. Na pasta do projeto, rode:  npm run dev
+  3. Abra http://localhost:3000
+  4. Edite index.html ou api/*.js e dê F5 — não precisa reiniciar
+
+Como colocar no ar (Vercel, grátis)
 
 Opção 1 — pelo terminal (mais rápido)
   1. Abra o terminal dentro desta pasta
@@ -20,4 +28,4 @@ Observações
   - A busca usa o serviço gratuito tikwm, que aceita cerca de 1 busca por segundo.
     O site já espera entre um link e outro e tenta de novo sozinho quando bate no limite.
   - Se um dia o tikwm sair do ar, só o api/info.js precisa ser trocado.
-  - O site só funciona depois de publicado (abrir o index.html direto no PC não busca nada).
+  - Abrir o index.html com dois cliques não busca nada: use o npm run dev ou o site publicado.
