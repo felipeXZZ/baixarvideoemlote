@@ -1,0 +1,23 @@
+BAIXA EM LOTE — como colocar no ar (Vercel, grátis)
+
+Opção 1 — pelo terminal (mais rápido)
+  1. Abra o terminal dentro desta pasta
+  2. Rode:  npx vercel
+  3. Responda as perguntas (pode aceitar tudo no Enter)
+  4. Para publicar a versão final:  npx vercel --prod
+
+Opção 2 — pelo GitHub
+  1. Suba esta pasta para um repositório no GitHub
+  2. No vercel.com, clique em "Add New > Project" e importe o repositório
+  3. Não precisa configurar nada: clique em Deploy
+
+Arquivos
+  index.html     → a página (cola os links, fila, ZIP, um por um)
+  api/info.js    → busca os dados de cada vídeo sem marca d'água
+  api/video.js   → repassa o arquivo pelo seu domínio (é o que faz o ZIP funcionar)
+
+Observações
+  - A busca usa o serviço gratuito tikwm, que aceita cerca de 1 busca por segundo.
+    O site já espera entre um link e outro e tenta de novo sozinho quando bate no limite.
+  - Se um dia o tikwm sair do ar, só o api/info.js precisa ser trocado.
+  - O site só funciona depois de publicado (abrir o index.html direto no PC não busca nada).
