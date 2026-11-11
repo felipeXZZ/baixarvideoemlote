@@ -50,6 +50,8 @@ export default async function handler(req) {
       titulo: d.title || '',
       capa: abs(d.origin_cover || d.cover),
       duracao: d.duration || 0,
+      data: d.create_time || 0,
+      audio: abs(d.music || d.music_info?.play),
       autor: d.author?.unique_id || '',
       nome: d.author?.nickname || '',
       tipo: imagens.length ? 'fotos' : 'video',
