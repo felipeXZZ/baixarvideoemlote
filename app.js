@@ -423,7 +423,7 @@
       const blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
       const d = new Date();
       const p2 = (n) => String(n).padStart(2, '0');
-      const nome = `${modo === 'mp3' ? 'audios-tiktok' : 'tiktoks'}-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}-${p2(d.getHours())}h${p2(d.getMinutes())}.zip`;
+      const nome = `baixaemlote-${modo === 'mp3' ? 'audios-tiktok' : 'tiktoks'}-${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}-${p2(d.getHours())}h${p2(d.getMinutes())}.zip`;
       salvar(blob, nome);
     } catch (e) {
       alert('Não deu para gerar o ZIP (talvez falte memória com tantos arquivos). Use "Baixar um por um".');
