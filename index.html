@@ -77,33 +77,66 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
 .chave input:checked + .trilho::after { transform: translateX(14px); }
 
 /* Barra de resumo + ações em massa (gruda logo abaixo do menu) */
+/* Tela de resultado: só o cartão com os vídeos, sem as seções do site */
+body.tela-resultado .so-inicio { display: none !important; }
+.resultado { padding-block: 40px 0; display: grid; gap: 14px; justify-items: center; }
+.cartao {
+  width: 100%; max-width: 680px; background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  padding: 0 24px 16px; box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 24px 60px -28px rgb(20 22 40 / .35);
+}
 .painel {
   position: sticky; top: calc(var(--topo) + env(safe-area-inset-top, 0px)); z-index: 5;
-  background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
-  padding-block: 12px; border-bottom: 1px solid var(--line);
-  display: grid; gap: 10px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  margin-inline: -24px; padding: 20px 24px 16px; border-bottom: 1px solid var(--line); border-radius: 20px 20px 0 0;
+  display: grid; gap: 12px;
+}
+.grande-btn {
+  flex: 1 1 100%; justify-content: center; padding: 16px; font-size: 16px; border: 0; border-radius: 12px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
+  color: var(--accent-ink); box-shadow: 0 10px 24px -12px var(--accent);
+}
+.grande-btn:hover { filter: brightness(1.07); }
+.acoes > button:not(.grande-btn) { flex: 1 1 0; justify-content: center; }
+.pe-cartao { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.aviso-curto { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; max-width: 60ch; }
+.ver-fila {
+  justify-self: center; border-radius: 999px; padding: 10px 16px;
+  background: var(--accent-soft); color: var(--accent); border-color: transparent;
 }
 .resumo { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-variant-numeric: tabular-nums; }
 .resumo .grande { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
 .resumo span { color: var(--muted); font-size: 14px; }
+.resumo .grande { color: var(--ink); }
+/* com um vídeo só, os botões grandes já fazem o trabalho: esconde os da linha */
+.lista.sozinho .item:has(a.capa) .lado { display: none; }
 .barra { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; }
 .barra i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
 .acoes { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* Fila de vídeos */
-.lista { display: grid; gap: 10px; }
+.lista { display: grid; }
 .item {
-  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; align-items: center;
-  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px;
+  display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 16px; align-items: center;
+  padding: 16px 0; border-top: 1px solid var(--line);
 }
+.item:first-child { border-top: 0; }
 .capa {
-  width: 64px; aspect-ratio: 9 / 16; border-radius: 8px; background: var(--bg) center / cover no-repeat;
+  width: 76px; aspect-ratio: 3 / 4; border-radius: 10px; background: var(--bg) center / cover no-repeat;
   border: 1px solid var(--line); display: grid; place-items: center; color: var(--muted); font: 600 11px var(--font-mono);
+  text-decoration: none;
 }
-.info { min-width: 0; display: grid; gap: 4px; }
-.autor { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.autor small { color: var(--muted); font-weight: 500; font-size: 14px; }
-.titulo { color: var(--muted); font-size: 13px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.capa .play {
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  background: rgb(255 255 255 / .92); color: #14161D; box-shadow: 0 2px 8px rgb(0 0 0 / .3);
+}
+a.capa:hover .play { transform: scale(1.08); }
+.info { min-width: 0; display: grid; gap: 5px; }
+.titulo { color: var(--ink); font-weight: 600; font-size: 14.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.autor { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--muted); font-size: 13.5px; font-weight: 500; }
+.autor span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.autor img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; background: var(--line); flex: none; }
+.stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats span { display: inline-flex; align-items: center; gap: 4px; }
 .url { font: 12px var(--font-mono); color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .chip { font: 600 11px/1 var(--font-body); letter-spacing: .04em; text-transform: uppercase; padding: 5px 8px; border-radius: 999px; }
@@ -209,8 +242,11 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
   .recursos { grid-template-columns: 1fr; }
   .recurso.destaque { grid-column: auto; grid-template-columns: 1fr; }
   .recurso.destaque .ico { grid-row: auto; }
-  .item { grid-template-columns: 52px minmax(0, 1fr); }
-  .capa { width: 52px; }
+  .resultado { padding-top: 20px; }
+  .cartao { padding: 0 16px 12px; border-radius: 16px; }
+  .painel { margin-inline: -16px; padding-inline: 16px; border-radius: 16px 16px 0 0; }
+  .item { grid-template-columns: 64px minmax(0, 1fr); gap: 12px 14px; }
+  .capa { width: 64px; }
   .lado { grid-column: 1 / -1; }
   .lado .btn, .lado button { flex: 1; justify-content: center; }
   .lado .discreto { flex: 0 0 auto; }
@@ -275,7 +311,7 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
 </header>
 
 <main class="wrap">
-  <section class="heroi" id="inicio">
+  <section class="heroi so-inicio" id="inicio">
     <header>
       <span class="selo">
         <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="5" width="9" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5 2h7a2 2 0 0 1 2 2v7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
@@ -311,33 +347,46 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
       </div>
     </section>
 
-    <section class="painel" id="painel" aria-label="Resumo e ações" hidden>
-      <div class="resumo" id="resumo" aria-live="polite"></div>
-      <div class="barra"><i id="barra"></i></div>
-      <div class="acoes">
-        <button class="primario" id="zip" disabled>
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-          Baixar todos em ZIP
-        </button>
-        <button id="umporum" disabled>Baixar um por um</button>
-        <button id="zipmp3" disabled>
-          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12V3.5l7-1.5V10.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="4.3" cy="12" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11.3" cy="10.5" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          Só os MP3 (ZIP)
-        </button>
-        <button id="refazer" hidden>Tentar de novo nos que falharam</button>
-        <button class="discreto" id="limpar">Limpar lista</button>
-      </div>
-    </section>
-
-    <section class="lista" id="lista" aria-label="Fila de vídeos">
-      <div class="vazio" id="vazio">
-        <strong>Sua fila aparece aqui</strong>
-        <span>Cole os links acima e toque em “Buscar vídeos”. Cada vídeo vira uma linha com capa, perfil e botão de baixar.</span>
-      </div>
-    </section>
+    <button class="ver-fila" id="verfila" type="button" hidden></button>
   </section>
 
-  <section class="secao" id="como-usar">
+  <!-- Tela de resultado: aparece no lugar das seções do site depois de "Buscar vídeos" -->
+  <section class="resultado" id="resultado" aria-label="Seus vídeos" hidden>
+    <div class="cartao">
+      <div class="painel" id="painel">
+        <div class="resumo" id="resumo" aria-live="polite"></div>
+        <div class="barra"><i id="barra"></i></div>
+        <div class="acoes">
+          <button class="grande-btn" id="zip" disabled>
+            <svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v8m0 0L5 7m3 3 3-3M3 13h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            <span id="zip-txt">Baixar todos em ZIP</span>
+          </button>
+          <button id="umporum" disabled>Baixar um por um</button>
+          <button id="zipmp3" disabled>
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 12V3.5l7-1.5V10.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="4.3" cy="12" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="11.3" cy="10.5" r="1.9" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span id="mp3-txt">Só os MP3 (ZIP)</span>
+          </button>
+          <button id="refazer" hidden>Tentar de novo nos que falharam</button>
+        </div>
+      </div>
+
+      <div class="lista" id="lista" aria-label="Fila de vídeos"></div>
+
+      <div class="pe-cartao">
+        <button class="discreto" id="mais" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Adicionar mais links
+        </button>
+        <button class="discreto" id="novo" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v2.8h-2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Baixar outros vídeos
+        </button>
+      </div>
+    </div>
+    <p class="aviso-curto">Baixe só vídeos que você tem direito de usar. Não somos afiliados ao TikTok.</p>
+  </section>
+
+  <section class="secao so-inicio" id="como-usar">
     <h2>Como usar</h2>
     <p class="intro">Três passos, não importa se são 2 ou 50 vídeos.</p>
     <ol class="passos">
@@ -365,7 +414,7 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     </ol>
   </section>
 
-  <section class="secao" id="recursos">
+  <section class="secao so-inicio" id="recursos">
     <h2>Por que usar o Baixa em Lote</h2>
     <p class="intro">O que os outros sites fazem um por vez, aqui sai tudo junto.</p>
     <div class="recursos">
@@ -402,7 +451,7 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     </div>
   </section>
 
-  <section class="secao" id="perguntas">
+  <section class="secao so-inicio" id="perguntas">
     <h2>Perguntas frequentes</h2>
     <p class="intro">Não achou sua dúvida? <a href="/contato.html">Fale com a gente</a>.</p>
     <div class="faq">
@@ -455,7 +504,7 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
       </details>
     </div>
 
-    <p class="aviso">Baixe só vídeos que você tem direito de usar, como os seus ou de quem te autorizou. Repostar vídeo de outra pessoa sem permissão pode violar direitos autorais e as regras das plataformas.</p>
+    <p class="aviso"><strong>Aviso:</strong> o Baixa em Lote não é uma ferramenta do TikTok e não tem nenhuma relação com o TikTok ou com a ByteDance Ltd. Só ajudamos quem usa o TikTok a baixar vídeos sem marca d'água, vários de uma vez e sem complicação. Se outros sites de download não estiverem funcionando para você, experimente o Baixa em Lote: estamos sempre atualizando o site para continuar fácil de baixar seus vídeos. Lembre-se de baixar só vídeos que você tem direito de usar. Obrigado!</p>
   </section>
 </main>
 
@@ -498,8 +547,9 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
 (() => {
   const $ = (id) => document.getElementById(id);
   const campo = $('links'), contador = $('contador'), btnBuscar = $('buscar'), chkHd = $('hd'), btnColar = $('colar'), dica = $('dica');
-  const painel = $('painel'), resumo = $('resumo'), barra = $('barra'), lista = $('lista'), vazio = $('vazio');
-  const btnZip = $('zip'), btnUm = $('umporum'), btnMp3 = $('zipmp3'), btnRefazer = $('refazer'), btnLimpar = $('limpar');
+  const resultado = $('resultado'), resumo = $('resumo'), barra = $('barra'), lista = $('lista'), btnVerFila = $('verfila');
+  const btnZip = $('zip'), zipTxt = $('zip-txt'), btnUm = $('umporum'), btnMp3 = $('zipmp3'), mp3Txt = $('mp3-txt'), btnRefazer = $('refazer');
+  const btnMais = $('mais'), btnNovo = $('novo');
 
   const RE = /(?:https?:\/\/)?(?:[a-z0-9-]+\.)*tiktok\.com\/[^\s"'<>,]+/gi;
   const ESPERA_ENTRE_BUSCAS = 1150; // o serviço aceita ~1 busca por segundo
@@ -570,7 +620,53 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     if (!novos.length) return;
     novos.forEach((url) => { const item = { uid: ++seq, url, status: 'fila', dados: null, erro: '', prog: 0 }; itens.push(item); criarCard(item); });
     atualizarPainel();
+    mostrarResultado();
     processar();
+  });
+
+  // ---------- troca de tela: início ⇄ resultado ----------
+  // A tela de resultado entra no histórico, então o "voltar" do celular retorna para o início.
+  const naTelaResultado = () => document.body.classList.contains('tela-resultado');
+
+  function mostrarResultado(empilhar = true) {
+    if (!itens.length) return;
+    if (empilhar && !naTelaResultado()) history.pushState({ tela: 'resultado' }, '');
+    document.body.classList.add('tela-resultado');
+    resultado.hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function mostrarInicio() {
+    document.body.classList.remove('tela-resultado');
+    resultado.hidden = true;
+    const n = itens.length;
+    btnVerFila.hidden = n === 0;
+    btnVerFila.textContent = `Ver sua fila (${plural(n, 'vídeo', 'vídeos')}) →`;
+  }
+
+  // Sai da tela de resultado; se ela estiver no histórico, volta uma página para não deixar entrada sobrando.
+  function voltarAoInicio() {
+    if (history.state?.tela === 'resultado') history.back();
+    mostrarInicio();
+  }
+
+  window.addEventListener('popstate', (ev) => {
+    if (ev.state?.tela === 'resultado' && itens.length) mostrarResultado(false); else mostrarInicio();
+  });
+
+  // Links do menu (#como-usar, #perguntas…) precisam das seções do início visíveis.
+  document.addEventListener('click', (ev) => {
+    const a = ev.target.closest('a[href^="#"]');
+    if (a && naTelaResultado()) { mostrarInicio(); history.replaceState(null, ''); }
+  });
+
+  btnVerFila.addEventListener('click', () => mostrarResultado());
+  btnMais.addEventListener('click', () => { voltarAoInicio(); window.scrollTo(0, 0); campo.focus({ preventScroll: true }); });
+  btnNovo.addEventListener('click', () => {
+    if (baixandoTudo) return;
+    itens = []; lista.replaceChildren();
+    atualizarPainel(); contar();
+    voltarAoInicio(); window.scrollTo(0, 0); campo.focus({ preventScroll: true });
   });
 
   async function processar() {
@@ -632,8 +728,15 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
   // ---------- cards ----------
   const ROTULO = { fila: 'Na fila', buscando: 'Buscando', pronto: 'Pronto', baixando: 'Baixando', baixado: 'Baixado', erro: 'Erro' };
 
+  const compacto = new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 });
+  const ICO = {
+    play: '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.8v8.4L10 6Z" fill="currentColor"/></svg>',
+    views: '<svg width="11" height="11" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.8v8.4L10 6Z" fill="currentColor"/></svg>',
+    coment: '<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 7.5c0-2.8 2.5-4.8 5.5-4.8s5.5 2 5.5 4.8-2.5 4.8-5.5 4.8c-.8 0-1.5-.1-2.2-.4L3 13l.6-2.4a4.4 4.4 0 0 1-1.1-3.1Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+    compart: '<svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M9 3l5 4.5L9 12V9.5c-3.5 0-5.5 1-7 3.5.5-3.5 2.5-6 7-6.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  };
+
   function criarCard(item) {
-    vazio.hidden = true;
     const el = document.createElement('article');
     el.className = 'item'; el.id = 'item-' + item.uid;
     lista.appendChild(el);
@@ -657,10 +760,18 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
       if (d.data) partes.push(dataIso(d.data).split('-').reverse().join('/'));
       meta += partes.filter(Boolean).map((t) => `<span>${t}</span>`).join('<span aria-hidden="true">·</span>');
     }
-    const topo = d
-      ? `<div class="autor">@${esc(d.autor || 'tiktok')}${d.nome && d.nome !== d.autor ? ` <small>${esc(d.nome)}</small>` : ''}</div>
-         ${d.titulo ? `<div class="titulo">${esc(d.titulo)}</div>` : ''}`
-      : `<div class="url">${esc(item.url.replace(/^https?:\/\//, ''))}</div>`;
+    let topo = `<div class="url">${esc(item.url.replace(/^https?:\/\//, ''))}</div>`;
+    if (d) {
+      const titulo = d.titulo || (d.tipo === 'fotos' ? 'Carrossel de fotos' : 'Vídeo sem legenda');
+      const stats = [
+        d.views ? `<span title="Visualizações">${ICO.views}${compacto.format(d.views)}</span>` : '',
+        d.comentarios ? `<span title="Comentários">${ICO.coment}${compacto.format(d.comentarios)}</span>` : '',
+        d.compartilhamentos ? `<span title="Compartilhamentos">${ICO.compart}${compacto.format(d.compartilhamentos)}</span>` : '',
+      ].join('');
+      topo = `<div class="titulo">${esc(titulo)}</div>
+        <div class="autor">${d.autorFoto ? `<img src="${esc(d.autorFoto)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}<span>@${esc(d.autor || 'tiktok')}</span></div>
+        ${stats ? `<div class="stats">${stats}</div>` : ''}`;
+    }
     const erro = item.status === 'erro' ? `<div class="msg-erro">${esc(item.erro)}</div>` : '';
     const mini = item.status === 'baixando'
       ? `<div class="mini${item.prog === null ? ' indef' : ''}" role="progressbar" aria-label="Progresso do download"><i style="width:${Math.round((item.prog || 0) * 100)}%"></i></div>`
@@ -678,7 +789,10 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     }
     lado += `<button class="discreto" data-acao="remover" data-uid="${item.uid}" aria-label="Remover da lista" title="Remover">✕</button>`;
 
-    el.innerHTML = `<div class="capa" ${capa}>${capaTxt}</div>
+    const capaHtml = d
+      ? `<a class="capa" href="${esc(item.url)}" target="_blank" rel="noopener" ${capa} aria-label="Ver no TikTok" title="Ver no TikTok"><span class="play">${ICO.play}</span></a>`
+      : `<div class="capa">${capaTxt}</div>`;
+    el.innerHTML = `${capaHtml}
       <div class="info">${topo}<div class="meta">${meta}</div>${mini}${erro}</div>
       <div class="lado">${lado}</div>`;
   }
@@ -700,14 +814,13 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     if (acao === 'tentar') { item.status = 'fila'; atualizar(item); processar(); }
     if (acao === 'remover') {
       itens = itens.filter((i) => i !== item); $('item-' + item.uid)?.remove();
-      if (!itens.length) vazio.hidden = false;
       atualizarPainel(); contar();
+      if (!itens.length) voltarAoInicio();
     }
   });
 
   // ---------- painel ----------
   function atualizarPainel() {
-    painel.hidden = itens.length === 0;
     const total = itens.length;
     const prontos = itens.filter((i) => i.dados).length;
     const comAudio = itens.filter((i) => i.dados?.audio).length;
@@ -721,11 +834,25 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
         ${erros ? `<span style="color:var(--err)">· ${erros} com erro</span>` : ''}`;
       barra.style.width = total ? (resolvidos / total * 100) + '%' : '0';
     }
+    // Com um vídeo só, os botões baixam direto (sem ZIP), como num site de download comum.
+    const sozinho = total === 1;
+    const fotos = sozinho && itens[0].dados?.tipo === 'fotos';
+    zipTxt.textContent = sozinho ? (fotos ? 'Baixar fotos (sem marca d\'água)' : 'Baixar sem marca d\'água') : `Baixar todos em ZIP (${prontos})`;
+    mp3Txt.textContent = sozinho ? 'Baixar só o MP3' : 'Só os MP3 (ZIP)';
+    btnUm.hidden = sozinho;
+    lista.classList.toggle('sozinho', sozinho);
     btnZip.disabled = baixandoTudo || prontos === 0;
     btnUm.disabled = baixandoTudo || prontos === 0;
     btnMp3.disabled = baixandoTudo || comAudio === 0;
     btnRefazer.hidden = erros === 0 || buscando || baixandoTudo;
-    btnLimpar.disabled = baixandoTudo;
+    btnNovo.disabled = baixandoTudo;
+  }
+
+  async function baixarDireto(item, modo) {
+    baixandoTudo = true; item.status = 'baixando'; item.prog = null; atualizar(item); atualizarPainel();
+    resumo.innerHTML = `<span class="grande">Baixando…</span><span>O arquivo vai para a pasta de downloads.</span>`;
+    await disparar(arquivos(item, modo));
+    item.status = 'baixado'; baixandoTudo = false; atualizar(item); atualizarPainel();
   }
 
   async function disparar(arqs) {
@@ -819,17 +946,13 @@ textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; 
     if (falhas) resumo.insertAdjacentHTML('beforeend', `<span style="color:var(--err)">· ${plural(falhas, 'ficou', 'ficaram')} fora do ZIP</span>`);
   }
 
-  btnZip.addEventListener('click', () => gerarZip('video'));
-  btnMp3.addEventListener('click', () => gerarZip('mp3'));
+  const umSo = (modo) => (itens.length === 1 && arquivos(itens[0], modo).length ? itens[0] : null);
+  btnZip.addEventListener('click', () => { const i = umSo('video'); i ? baixarDireto(i, 'video') : gerarZip('video'); });
+  btnMp3.addEventListener('click', () => { const i = umSo('mp3'); i ? baixarDireto(i, 'mp3') : gerarZip('mp3'); });
 
   btnRefazer.addEventListener('click', () => {
     itens.filter((i) => i.status === 'erro').forEach((i) => { i.status = i.dados ? 'pronto' : 'fila'; i.erro = ''; atualizar(i); });
     atualizarPainel(); processar();
-  });
-
-  btnLimpar.addEventListener('click', () => {
-    itens = []; lista.querySelectorAll('.item').forEach((e) => e.remove());
-    vazio.hidden = false; atualizarPainel(); contar();
   });
 
   // FAQ: abrir uma pergunta fecha as outras (reforço para navegadores sem suporte a <details name>).

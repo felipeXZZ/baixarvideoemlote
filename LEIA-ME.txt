@@ -1,12 +1,4 @@
-BAIXA EM LOTE
-
-Rodar no seu PC (para testar e editar)
-  1. Precisa ter o Node.js 18 ou mais novo (nodejs.org)
-  2. Na pasta do projeto, rode:  npm run dev
-  3. Abra http://localhost:3000
-  4. Edite index.html ou api/*.js e dê F5 — não precisa reiniciar
-
-Como colocar no ar (Vercel, grátis)
+BAIXA EM LOTE — como colocar no ar (Vercel, grátis)
 
 Opção 1 — pelo terminal (mais rápido)
   1. Abra o terminal dentro desta pasta
@@ -23,9 +15,20 @@ Arquivos
   index.html     → a página (cola os links, fila, ZIP, um por um)
   api/info.js    → busca os dados de cada vídeo sem marca d'água
   api/video.js   → repassa o arquivo pelo seu domínio (é o que faz o ZIP funcionar)
+  estilo.css     → cores (tema claro/escuro), menu do topo, botões e rodapé, usados em todas as páginas
+  tema.js        → botão de tema claro/escuro (segue o aparelho e guarda a escolha)
+  privacidade.html, termos.html, contato.html → páginas do rodapé
+  og.png         → imagem que aparece ao compartilhar o link (WhatsApp etc.)
+  favicon.svg, apple-touch-icon.png → ícones da aba e da tela inicial do iPhone
+  robots.txt, sitemap.xml → para o Google
+
+Antes de publicar, troque:
+  - o e-mail SEU-EMAIL@exemplo.com em contato.html
+  - o endereço https://baixarvideoemlote.vercel.app pelo seu domínio de verdade, se for outro
+    (aparece em index.html, nas 3 páginas do rodapé, robots.txt e sitemap.xml)
 
 Observações
   - A busca usa o serviço gratuito tikwm, que aceita cerca de 1 busca por segundo.
     O site já espera entre um link e outro e tenta de novo sozinho quando bate no limite.
   - Se um dia o tikwm sair do ar, só o api/info.js precisa ser trocado.
-  - Abrir o index.html com dois cliques não busca nada: use o npm run dev ou o site publicado.
+  - O site só funciona depois de publicado (abrir o index.html direto no PC não busca nada).
