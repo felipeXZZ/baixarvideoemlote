@@ -97,7 +97,10 @@ body.tela-resultado .so-inicio { display: none !important; }
 }
 .grande-btn:hover { filter: brightness(1.07); }
 .acoes > button:not(.grande-btn) { flex: 1 1 0; justify-content: center; }
-.pe-cartao { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.pe-cartao { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+.perigo { color: var(--err); background: var(--err-soft); border-color: transparent; padding: 10px 14px; }
+.perigo:hover { border-color: var(--err); }
+.perigo.confirmar { background: var(--err); color: #fff; border-color: var(--err); }
 .aviso-curto { margin: 0; color: var(--muted); font-size: 12.5px; text-align: center; max-width: 60ch; }
 .ver-fila {
   justify-self: center; border-radius: 999px; padding: 10px 16px;
@@ -377,9 +380,9 @@ a.capa:hover .play { transform: scale(1.08); }
           <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           Adicionar mais links
         </button>
-        <button class="discreto" id="novo" type="button">
-          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v2.8h-2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Baixar outros vídeos
+        <button class="perigo" id="novo" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 4.5h11M6.5 4.5V3a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1.5M4 4.5l.7 8.6a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9l.7-8.6M6.8 7.2v4M9.2 7.2v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="novo-txt">Limpar lista</span>
         </button>
       </div>
     </div>
@@ -662,8 +665,19 @@ a.capa:hover .play { transform: scale(1.08); }
 
   btnVerFila.addEventListener('click', () => mostrarResultado());
   btnMais.addEventListener('click', () => { voltarAoInicio(); window.scrollTo(0, 0); campo.focus({ preventScroll: true }); });
+  // Limpar lista: com mais de um vídeo, o primeiro toque pede confirmação (some sozinho depois de 4 s).
+  const novoTxt = $('novo-txt');
+  let confirmarTimer = null;
+  function desarmarLimpar() { clearTimeout(confirmarTimer); btnNovo.classList.remove('confirmar'); novoTxt.textContent = 'Limpar lista'; }
   btnNovo.addEventListener('click', () => {
     if (baixandoTudo) return;
+    if (itens.length > 1 && !btnNovo.classList.contains('confirmar')) {
+      btnNovo.classList.add('confirmar');
+      novoTxt.textContent = `Toque de novo para apagar ${itens.length} vídeos`;
+      confirmarTimer = setTimeout(desarmarLimpar, 4000);
+      return;
+    }
+    desarmarLimpar();
     itens = []; lista.replaceChildren();
     atualizarPainel(); contar();
     voltarAoInicio(); window.scrollTo(0, 0); campo.focus({ preventScroll: true });
