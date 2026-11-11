@@ -696,7 +696,17 @@ a.capa:hover .play { transform: scale(1.08); }
       }
     }
     if (item.status === 'buscando') { item.status = 'erro'; item.erro = 'Não foi possível buscar este vídeo.'; }
-    atualizar(item); atualizarPainel();
+    atualizar(item); ordenar(); atualizarPainel();
+  }
+
+  // Mais visualizados no topo. Quem ainda não tem dados (na fila, buscando ou com erro) fica embaixo, na ordem colada.
+  function ordenar() {
+    itens.sort((a, b) => {
+      if (!!a.dados !== !!b.dados) return a.dados ? -1 : 1;
+      if (a.dados) return (b.dados.views || 0) - (a.dados.views || 0) || a.uid - b.uid;
+      return a.uid - b.uid;
+    });
+    itens.forEach((i) => { const el = $('item-' + i.uid); if (el) lista.appendChild(el); });
   }
 
   // ---------- nomes e links de download ----------
