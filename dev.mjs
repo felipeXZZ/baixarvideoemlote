@@ -25,10 +25,23 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    // Qualquer outra rota → index.html (sempre lido de novo, é só dar F5)
-    const html = await readFile(path.join(PASTA, 'index.html'));
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    res.end(html);
+    // Arquivos do site (estilo.css, tema.js, privacidade.html, og.png...). Sempre lidos de novo, é só dar F5.
+    // Endereço que não existe → index.html, como antes.
+    const TIPOS = {
+      '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
+      '.mjs': 'text/javascript; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
+      '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml',
+    };
+    let rel = decodeURIComponent(url.pathname);
+    if (rel.endsWith('/')) rel += 'index.html';
+    let arquivo = path.join(PASTA, rel);
+    let conteudo = null;
+    if (arquivo.startsWith(PASTA + path.sep)) {
+      try { conteudo = await readFile(arquivo); } catch { conteudo = null; }
+    }
+    if (!conteudo) { arquivo = path.join(PASTA, 'index.html'); conteudo = await readFile(arquivo); }
+    res.writeHead(200, { 'Content-Type': TIPOS[path.extname(arquivo).toLowerCase()] || 'application/octet-stream', 'Cache-Control': 'no-store' });
+    res.end(conteudo);
   } catch (e) {
     console.error(e);
     if (!res.headersSent) res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
