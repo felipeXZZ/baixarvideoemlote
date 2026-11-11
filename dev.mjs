@@ -9,8 +9,17 @@ import path from 'node:path';
 const PASTA = path.dirname(fileURLToPath(import.meta.url));
 const PORTA = Number(process.env.PORT) || 3000;
 
+// Mesmos cabeçalhos de segurança do site publicado (vercel.json), para testar igual.
+async function cabecalhosVercel() {
+  try {
+    const cfg = JSON.parse(await readFile(path.join(PASTA, 'vercel.json'), 'utf8'));
+    return Object.fromEntries((cfg.headers || []).flatMap((h) => h.headers.map((x) => [x.key, x.value])));
+  } catch { return {}; }
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORTA}`);
+  for (const [k, v] of Object.entries(await cabecalhosVercel())) res.setHeader(k, v);
   try {
     // Rotas /api/info e /api/video → mesmas funções que rodam na Vercel
     const rota = url.pathname.match(/^\/api\/([a-z0-9-]+)\/?$/i);
@@ -18,7 +27,10 @@ const server = http.createServer(async (req, res) => {
       const arquivo = path.join(PASTA, 'api', rota[1] + '.js');
       // ?v= força recarregar o arquivo, assim suas edições valem sem reiniciar
       const mod = await import(pathToFileURL(arquivo).href + '?v=' + Date.now());
-      const resposta = await mod.default(new Request(url, { method: req.method, headers: req.headers }));
+      const partes = [];
+      for await (const p of req) partes.push(p);
+      const corpo = partes.length ? Buffer.concat(partes) : undefined;
+      const resposta = await mod.default(new Request(url, { method: req.method, headers: req.headers, body: corpo }));
       res.writeHead(resposta.status, Object.fromEntries(resposta.headers));
       if (resposta.body) Readable.fromWeb(resposta.body).pipe(res);
       else res.end();
@@ -49,6 +61,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORTA, () => {
+// Só aceita conexões do próprio PC (ninguém na mesma rede Wi-Fi consegue abrir).
+server.listen(PORTA, '127.0.0.1', () => {
   console.log(`\n  Baixa em Lote rodando em  http://localhost:${PORTA}\n  Edite os arquivos e dê F5 no navegador. Ctrl+C para parar.\n`);
 });

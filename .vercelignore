@@ -1,0 +1,4 @@
+# Arquivos que não vão para o site publicado (só servem para quem edita o projeto)
+dev.mjs
+LEIA-ME.txt
+.gitignore

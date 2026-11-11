@@ -21,6 +21,9 @@ Opção 2 — pelo GitHub
 
 Arquivos
   index.html     → a página (cola os links, fila, ZIP, um por um)
+  app.js         → a lógica da página (busca, fila, downloads)
+  vercel.json    → regras de segurança do site (a página não pode mandar dados para outros sites)
+  .vercelignore  → arquivos que não vão para o site publicado (dev.mjs, LEIA-ME)
   api/info.js    → busca os dados de cada vídeo sem marca d'água
   api/video.js   → repassa o arquivo pelo seu domínio (é o que faz o ZIP funcionar)
   dev.mjs        → servidor local do npm run dev

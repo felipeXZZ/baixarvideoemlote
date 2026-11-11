@@ -20,8 +20,12 @@ function traduzir(msg = '') {
   return msg || 'Não foi possível buscar este vídeo.';
 }
 
+// Só aceita POST com o link no corpo: assim o link nunca aparece no endereço da requisição
+// (endereços ficam nos logs da hospedagem). Nada aqui grava ou registra o link.
 export default async function handler(req) {
-  const url = new URL(req.url).searchParams.get('url') || '';
+  if (req.method !== 'POST') return json({ ok: false, erro: 'Método não permitido.' }, 405);
+  let url = '';
+  try { url = String((await req.json())?.url || '').slice(0, 2048); } catch { url = ''; }
   if (!/^https?:\/\/([a-z0-9-]+\.)*tiktok\.com\//i.test(url)) {
     return json({ ok: false, erro: 'Link inválido. Use um link do TikTok.' }, 400);
   }
