@@ -49,8 +49,71 @@
     contador.innerHTML = `<b>${novos.length}</b> ${novos.length === 1 ? 'link novo' : 'links novos'}${extras.map((t) => ` · ${t}`).join('')}`;
     btnBuscar.disabled = novos.length === 0;
   }
-  campo.addEventListener('input', () => { dica.hidden = true; contar(); });
-  campo.addEventListener('paste', () => setTimeout(contar, 0));
+  let ajeitando = false;
+  campo.addEventListener('input', (ev) => {
+    dica.hidden = true;
+    if (!ajeitando) ajeitarColagem(ev);
+    contar();
+  });
+
+  // Plano B para teclados de celular (sugestão da área de transferência do Gboard/iPhone, colar sem evento "paste"):
+  // se acabou de entrar um link, garante que ele fique numa linha própria e o cursor desça.
+  function ajeitarColagem(ev) {
+    const tipo = ev.inputType || '';
+    const colou = tipo === 'insertFromPaste' || tipo === 'insertFromDrop' || tipo === 'insertReplacementText' ||
+      (tipo === 'insertText' && ev.data && ev.data.length > 1);
+    if (!colou || campo.selectionStart !== campo.selectionEnd) return;
+    const v = campo.value, pos = campo.selectionEnd;
+    const iniLinha = v.lastIndexOf('\n', pos - 1) + 1;
+    if (!/tiktok\.com\//i.test(v.slice(iniLinha, pos))) return;
+    let antes = '', ini = pos;
+    // Texto conhecido (insertText): se grudou no fim de outro link, separa numa linha antes.
+    if (ev.data && ev.data.length <= pos && v.slice(pos - ev.data.length, pos) === ev.data) {
+      ini = pos - ev.data.length;
+      if (ini > 0 && v[ini - 1] !== '\n') antes = '\n';
+    }
+    const depois = v[pos] === '\n' ? '' : '\n';
+    if (!antes && !depois) { campo.setSelectionRange(pos + 1, pos + 1); return; }
+    ajeitando = true;
+    try {
+      if (antes) { campo.setSelectionRange(ini, ini); inserir(antes); }
+      const p = pos + antes.length;
+      campo.setSelectionRange(p, p);
+      if (depois) inserir(depois);
+      else campo.setSelectionRange(p + 1, p + 1);
+    } finally { ajeitando = false; }
+  }
+  function inserir(txt) {
+    const a = campo.selectionStart, b = campo.selectionEnd;
+    if (!document.execCommand('insertText', false, txt)) campo.setRangeText(txt, a, b, 'end');
+  }
+
+  // Colar sempre deixa o texto numa linha própria e o cursor na linha de baixo, pronto para o próximo link.
+  function colarTexto(t) {
+    let txt = t.replace(/\r\n?/g, '\n').trim();
+    if (!txt) return;
+    const v = campo.value;
+    let ini = campo.selectionStart, fim = campo.selectionEnd;
+    // Cursor no meio de uma linha (sem nada selecionado): cola no fim dela, para não partir um link ao meio.
+    if (ini === fim && v[fim] !== undefined && v[fim] !== '\n') {
+      const quebra = v.indexOf('\n', fim);
+      ini = fim = quebra === -1 ? v.length : quebra;
+      campo.setSelectionRange(ini, fim);
+    }
+    if (ini > 0 && v[ini - 1] !== '\n') txt = '\n' + txt;
+    if (v[fim] !== '\n') txt += '\n';
+    campo.focus();
+    // insertText mantém o Ctrl+Z funcionando; setRangeText é o plano B.
+    ajeitando = true;
+    try { inserir(txt); } finally { ajeitando = false; }
+    contar();
+  }
+  campo.addEventListener('paste', (ev) => {
+    const t = ev.clipboardData?.getData('text/plain') || ev.clipboardData?.getData('text');
+    if (!t) return;
+    ev.preventDefault();
+    colarTexto(t);
+  });
 
   function mostrarDica(txt) { dica.textContent = txt; dica.hidden = false; }
 
@@ -59,7 +122,8 @@
       if (!navigator.clipboard?.readText) throw new Error('sem suporte');
       const t = await navigator.clipboard.readText();
       if (!t.trim()) { mostrarDica('Não há nada copiado. Copie os links no TikTok e toque em Colar de novo.'); return; }
-      campo.value = campo.value.trim() ? campo.value.replace(/\s*$/, '\n') + t : t;
+      campo.setSelectionRange(campo.value.length, campo.value.length);
+      colarTexto(t);
       dica.hidden = true;
       contar();
       if (!analisar().novos.length) mostrarDica('O texto colado não tem nenhum link novo do TikTok.');
