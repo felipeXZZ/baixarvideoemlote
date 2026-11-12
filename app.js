@@ -50,7 +50,32 @@
     btnBuscar.disabled = novos.length === 0;
   }
   campo.addEventListener('input', () => { dica.hidden = true; contar(); });
-  campo.addEventListener('paste', () => setTimeout(contar, 0));
+
+  // Colar sempre deixa o texto numa linha própria e o cursor na linha de baixo, pronto para o próximo link.
+  function colarTexto(t) {
+    let txt = t.replace(/\r\n?/g, '\n').trim();
+    if (!txt) return;
+    const v = campo.value;
+    let ini = campo.selectionStart, fim = campo.selectionEnd;
+    // Cursor no meio de uma linha (sem nada selecionado): cola no fim dela, para não partir um link ao meio.
+    if (ini === fim && v[fim] !== undefined && v[fim] !== '\n') {
+      const quebra = v.indexOf('\n', fim);
+      ini = fim = quebra === -1 ? v.length : quebra;
+      campo.setSelectionRange(ini, fim);
+    }
+    if (ini > 0 && v[ini - 1] !== '\n') txt = '\n' + txt;
+    if (v[fim] !== '\n') txt += '\n';
+    campo.focus();
+    // insertText mantém o Ctrl+Z funcionando; setRangeText é o plano B.
+    if (!document.execCommand('insertText', false, txt)) campo.setRangeText(txt, ini, fim, 'end');
+    contar();
+  }
+  campo.addEventListener('paste', (ev) => {
+    const t = ev.clipboardData?.getData('text');
+    if (!t) return;
+    ev.preventDefault();
+    colarTexto(t);
+  });
 
   function mostrarDica(txt) { dica.textContent = txt; dica.hidden = false; }
 
@@ -59,7 +84,8 @@
       if (!navigator.clipboard?.readText) throw new Error('sem suporte');
       const t = await navigator.clipboard.readText();
       if (!t.trim()) { mostrarDica('Não há nada copiado. Copie os links no TikTok e toque em Colar de novo.'); return; }
-      campo.value = campo.value.trim() ? campo.value.replace(/\s*$/, '\n') + t : t;
+      campo.setSelectionRange(campo.value.length, campo.value.length);
+      colarTexto(t);
       dica.hidden = true;
       contar();
       if (!analisar().novos.length) mostrarDica('O texto colado não tem nenhum link novo do TikTok.');
