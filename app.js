@@ -49,7 +49,44 @@
     contador.innerHTML = `<b>${novos.length}</b> ${novos.length === 1 ? 'link novo' : 'links novos'}${extras.map((t) => ` · ${t}`).join('')}`;
     btnBuscar.disabled = novos.length === 0;
   }
-  campo.addEventListener('input', () => { dica.hidden = true; contar(); });
+  let ajeitando = false;
+  campo.addEventListener('input', (ev) => {
+    dica.hidden = true;
+    if (!ajeitando) ajeitarColagem(ev);
+    contar();
+  });
+
+  // Plano B para teclados de celular (sugestão da área de transferência do Gboard/iPhone, colar sem evento "paste"):
+  // se acabou de entrar um link, garante que ele fique numa linha própria e o cursor desça.
+  function ajeitarColagem(ev) {
+    const tipo = ev.inputType || '';
+    const colou = tipo === 'insertFromPaste' || tipo === 'insertFromDrop' || tipo === 'insertReplacementText' ||
+      (tipo === 'insertText' && ev.data && ev.data.length > 1);
+    if (!colou || campo.selectionStart !== campo.selectionEnd) return;
+    const v = campo.value, pos = campo.selectionEnd;
+    const iniLinha = v.lastIndexOf('\n', pos - 1) + 1;
+    if (!/tiktok\.com\//i.test(v.slice(iniLinha, pos))) return;
+    let antes = '', ini = pos;
+    // Texto conhecido (insertText): se grudou no fim de outro link, separa numa linha antes.
+    if (ev.data && ev.data.length <= pos && v.slice(pos - ev.data.length, pos) === ev.data) {
+      ini = pos - ev.data.length;
+      if (ini > 0 && v[ini - 1] !== '\n') antes = '\n';
+    }
+    const depois = v[pos] === '\n' ? '' : '\n';
+    if (!antes && !depois) { campo.setSelectionRange(pos + 1, pos + 1); return; }
+    ajeitando = true;
+    try {
+      if (antes) { campo.setSelectionRange(ini, ini); inserir(antes); }
+      const p = pos + antes.length;
+      campo.setSelectionRange(p, p);
+      if (depois) inserir(depois);
+      else campo.setSelectionRange(p + 1, p + 1);
+    } finally { ajeitando = false; }
+  }
+  function inserir(txt) {
+    const a = campo.selectionStart, b = campo.selectionEnd;
+    if (!document.execCommand('insertText', false, txt)) campo.setRangeText(txt, a, b, 'end');
+  }
 
   // Colar sempre deixa o texto numa linha própria e o cursor na linha de baixo, pronto para o próximo link.
   function colarTexto(t) {
@@ -67,11 +104,12 @@
     if (v[fim] !== '\n') txt += '\n';
     campo.focus();
     // insertText mantém o Ctrl+Z funcionando; setRangeText é o plano B.
-    if (!document.execCommand('insertText', false, txt)) campo.setRangeText(txt, ini, fim, 'end');
+    ajeitando = true;
+    try { inserir(txt); } finally { ajeitando = false; }
     contar();
   }
   campo.addEventListener('paste', (ev) => {
-    const t = ev.clipboardData?.getData('text');
+    const t = ev.clipboardData?.getData('text/plain') || ev.clipboardData?.getData('text');
     if (!t) return;
     ev.preventDefault();
     colarTexto(t);
