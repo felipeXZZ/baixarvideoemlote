@@ -107,6 +107,28 @@ body.tela-resultado .so-inicio { display: none !important; }
   justify-self: center; border-radius: 999px; padding: 10px 16px;
   background: var(--accent-soft); color: var(--accent); border-color: transparent;
 }
+/* Histórico */
+body.tela-historico .so-inicio { display: none !important; }
+.atalhos { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.atalhos:not(:has(button:not([hidden]))) { display: none; }
+.ver-hist { border-radius: 999px; padding: 10px 16px; color: var(--muted); }
+.ver-hist svg { flex: none; }
+.busca {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px;
+  background: var(--bg); color: var(--ink); font: 14px/1.4 var(--font-body);
+}
+.dia { font: 600 12px/1 var(--font-body); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 18px 0 6px; }
+.dia:first-child { padding-top: 8px; }
+.hist-lista .item { grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; padding: 12px 0; }
+.hist-lista .dia + .item { border-top: 0; }
+.hist-lista .capa { width: 56px; overflow: hidden; }
+.hist-lista .capa img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.chip.ja { background: var(--line); color: var(--muted); }
+.vazio-hist { padding: 28px 0; text-align: center; color: var(--muted); }
+@media (max-width: 560px) {
+  .hist-lista .item { grid-template-columns: 52px minmax(0, 1fr); }
+  .hist-lista .capa { width: 52px; }
+}
 .resumo { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; font-variant-numeric: tabular-nums; }
 .resumo .grande { font-family: var(--font-display); font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
 .resumo span { color: var(--muted); font-size: 14px; }
@@ -284,6 +306,8 @@ a.capa:hover .play { transform: scale(1.08); }
       "acceptedAnswer": { "@type": "Answer", "text": "Sim. Cada vídeo tem um botão MP3, e o botão Só os MP3 (ZIP) junta o áudio de todos os vídeos da lista num ZIP só." } },
     { "@type": "Question", "name": "Dá pra baixar carrossel de fotos?",
       "acceptedAnswer": { "@type": "Answer", "text": "Sim. Quando o link é de um carrossel, o site baixa cada foto separada em JPG, e elas também entram no ZIP." } },
+    { "@type": "Question", "name": "Tem histórico dos vídeos que eu baixei?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Tem, e sem precisar de conta. Os vídeos que você baixa aparecem no botão Histórico, separados por dia, com busca e um botão para baixar de novo. O histórico fica só no seu aparelho e no seu navegador, e dá para apagar ou desligar quando quiser." } },
     { "@type": "Question", "name": "É seguro?",
       "acceptedAnswer": { "@type": "Answer", "text": "Sim. Não pedimos login nem senha do TikTok e não guardamos os links nem os vídeos. Os arquivos só passam pelo nosso servidor para chegar até você." } }
   ]
@@ -351,7 +375,35 @@ a.capa:hover .play { transform: scale(1.08); }
       </div>
     </section>
 
-    <button class="ver-fila" id="verfila" type="button" hidden></button>
+    <div class="atalhos">
+      <button class="ver-fila" id="verfila" type="button" hidden></button>
+      <button class="ver-hist" id="verhist" type="button" hidden></button>
+    </div>
+  </section>
+
+  <!-- Histórico: fica só neste navegador (localStorage), sem conta -->
+  <section class="resultado" id="historico" aria-label="Histórico de downloads" hidden>
+    <div class="cartao">
+      <div class="painel">
+        <div class="resumo"><span class="grande">Histórico</span><span id="hist-conta"></span></div>
+        <input type="search" id="hist-busca" class="busca" placeholder="Procurar por legenda ou @perfil" autocomplete="off">
+        <div class="acoes">
+          <button id="hist-fila" type="button">Baixar de novo os listados</button>
+          <button id="hist-copiar" type="button">Copiar os links</button>
+        </div>
+      </div>
+      <div class="lista hist-lista" id="hist-lista"></div>
+      <div class="pe-cartao">
+        <button class="discreto" id="hist-voltar" type="button">← Voltar</button>
+        <label class="chave" for="hist-ligado">
+          <input type="checkbox" id="hist-ligado" checked>
+          <span class="trilho"></span>
+          Guardar histórico
+        </label>
+        <button class="perigo" id="hist-limpar" type="button"><span id="hist-limpar-txt">Apagar histórico</span></button>
+      </div>
+    </div>
+    <p class="aviso-curto">O histórico fica só neste aparelho e neste navegador. Não precisa de conta e ninguém mais vê: nem a gente.</p>
   </section>
 
   <!-- Tela de resultado: aparece no lugar das seções do site depois de "Buscar vídeos" -->
@@ -377,6 +429,10 @@ a.capa:hover .play { transform: scale(1.08); }
       <div class="lista" id="lista" aria-label="Fila de vídeos"></div>
 
       <div class="pe-cartao">
+        <button class="discreto" id="abrir-hist" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Histórico
+        </button>
         <button class="discreto" id="mais" type="button">
           <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           Adicionar mais links
@@ -505,6 +561,10 @@ a.capa:hover .play { transform: scale(1.08); }
       <details name="faq">
         <summary>É seguro?</summary>
         <div class="resp"><p>Sim. Não pedimos login nem senha do TikTok e não guardamos os links nem os vídeos. Os arquivos só passam pelo nosso servidor para chegar até você. Veja a <a href="/privacidade.html">Política de Privacidade</a>.</p></div>
+      </details>
+      <details name="faq">
+        <summary>Tem histórico dos vídeos que eu baixei?</summary>
+        <div class="resp"><p>Tem, e sem precisar de conta. Os vídeos que você baixa aparecem no botão <strong>Histórico</strong>, separados por dia, com busca por legenda ou @perfil e um botão para baixar de novo. Quando você cola um link que já baixou antes, o site avisa.</p><p>O histórico fica só no seu aparelho e no seu navegador: nem a gente vê. Dá para apagar ou desligar quando quiser.</p></div>
       </details>
     </div>
 

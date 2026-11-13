@@ -16,6 +16,130 @@
   let itens = [];
   let buscando = false, baixandoTudo = false, seq = 0;
 
+  // ---------- histórico (só neste navegador, sem conta) ----------
+  // Cada vídeo baixado vira uma entrada: id, link, legenda, @perfil, capa, quando e o que foi baixado (vídeo, fotos, MP3).
+  const telaHist = $('historico'), histLista = $('hist-lista'), histConta = $('hist-conta'), histBusca = $('hist-busca');
+  const btnVerHist = $('verhist'), btnAbrirHist = $('abrir-hist'), chkHist = $('hist-ligado');
+  const btnHistFila = $('hist-fila'), btnHistCopiar = $('hist-copiar'), btnHistLimpar = $('hist-limpar'), histLimparTxt = $('hist-limpar-txt');
+  const HIST = 'bel-historico', HIST_MAX = 500;
+  const lerHist = () => { try { const a = JSON.parse(localStorage.getItem(HIST) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+  const gravarHist = (lista) => { try { localStorage.setItem(HIST, JSON.stringify(lista.slice(0, HIST_MAX))); } catch (e) {} };
+  let historico = lerHist();
+  let guardarHist = true;
+  try { guardarHist = localStorage.getItem('bel-hist-on') !== '0'; } catch (e) {}
+  chkHist.checked = guardarHist;
+  const idDe = (item) => String(item.dados?.id || chave(item.url));
+
+  function registrar(item, modo) {
+    if (!guardarHist || !item.dados) return;
+    historico = lerHist(); // relê: outra aba pode ter mudado
+    const d = item.dados, id = idDe(item);
+    const antigo = historico.find((h) => h.id === id);
+    const h = { id, url: item.url, titulo: d.titulo || '', autor: d.autor || '', capa: d.capa || '', tipo: d.tipo, em: Date.now(), modos: [...new Set([...(antigo?.modos || []), modo])] };
+    historico = [h, ...historico.filter((x) => x.id !== id)];
+    gravarHist(historico);
+    atualizarAtalhoHist();
+  }
+
+  function atualizarAtalhoHist() {
+    const n = historico.length;
+    btnVerHist.hidden = n === 0;
+    btnVerHist.innerHTML = `<svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 4.8V8l2.2 1.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Histórico (${n})`;
+  }
+
+  const diaDe = (ts) => {
+    const d = new Date(ts), hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    const dia = new Date(d); dia.setHours(0, 0, 0, 0);
+    const dif = Math.round((hoje - dia) / 86400000);
+    if (dif === 0) return 'Hoje';
+    if (dif === 1) return 'Ontem';
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  };
+  const hora = (ts) => new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const ROT_MODO = { video: 'Vídeo', fotos: 'Fotos', mp3: 'MP3' };
+  const semAcento = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  function filtrados() {
+    const q = semAcento(histBusca.value.trim().replace(/^@/, ''));
+    return q ? historico.filter((h) => semAcento(`${h.titulo} ${h.autor}`).includes(q)) : historico;
+  }
+
+  function desenharHist() {
+    const lista = filtrados();
+    histConta.textContent = histBusca.value.trim()
+      ? `${lista.length} de ${plural(historico.length, 'vídeo', 'vídeos')}`
+      : plural(historico.length, 'vídeo baixado', 'vídeos baixados');
+    btnHistFila.disabled = btnHistCopiar.disabled = lista.length === 0;
+    btnHistFila.textContent = lista.length === historico.length ? `Baixar todos de novo (${lista.length})` : `Baixar de novo os ${lista.length} listados`;
+    if (!historico.length) { histLista.innerHTML = `<p class="vazio-hist">${guardarHist ? 'Nada por aqui ainda. Os vídeos que você baixar aparecem aqui.' : 'O histórico está desligado.'}</p>`; return; }
+    if (!lista.length) { histLista.innerHTML = '<p class="vazio-hist">Nenhum vídeo encontrado.</p>'; return; }
+    let ultimoDia = '';
+    histLista.innerHTML = lista.map((h) => {
+      const dia = diaDe(h.em);
+      const cab = dia !== ultimoDia ? `<div class="dia">${esc(dia)}</div>` : '';
+      ultimoDia = dia;
+      const modos = (h.modos || []).map((m) => ROT_MODO[m === 'video' && h.tipo === 'fotos' ? 'fotos' : m] || m);
+      return `${cab}<article class="item">
+        <a class="capa" href="${esc(h.url)}" target="_blank" rel="noopener" aria-label="Ver no TikTok" title="Ver no TikTok">${h.capa ? `<img src="${esc(h.capa)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ''}</a>
+        <div class="info">
+          <div class="titulo">${esc(h.titulo || (h.tipo === 'fotos' ? 'Carrossel de fotos' : 'Vídeo sem legenda'))}</div>
+          <div class="autor"><span>@${esc(h.autor || 'tiktok')}</span></div>
+          <div class="meta"><span>${hora(h.em)}</span>${modos.map((m) => `<span class="chip baixado">${esc(m)}</span>`).join('')}</div>
+        </div>
+        <div class="lado">
+          <button data-hacao="refazer" data-id="${esc(h.id)}">Baixar de novo</button>
+          <button class="discreto" data-hacao="apagar" data-id="${esc(h.id)}" aria-label="Apagar do histórico" title="Apagar do histórico">✕</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+  // Capa antiga expira no TikTok: se a imagem não carregar, some e fica o quadro vazio.
+  histLista.addEventListener('error', (ev) => { if (ev.target.tagName === 'IMG') ev.target.remove(); }, true);
+  histLista.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-hacao]'); if (!b) return;
+    const h = historico.find((x) => x.id === b.dataset.id); if (!h) return;
+    if (b.dataset.hacao === 'apagar') {
+      historico = lerHist().filter((x) => x.id !== h.id); gravarHist(historico);
+      atualizarAtalhoHist(); desenharHist();
+    } else adicionarNaFila([h.url]);
+  });
+  histBusca.addEventListener('input', desenharHist);
+  btnHistFila.addEventListener('click', () => adicionarNaFila(filtrados().map((h) => h.url)));
+  btnHistCopiar.addEventListener('click', async () => {
+    const txt = filtrados().map((h) => h.url).join('\n');
+    let ok = false;
+    try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) {}
+    const antes = 'Copiar os links';
+    btnHistCopiar.textContent = ok ? 'Copiado!' : 'Não deu para copiar';
+    setTimeout(() => { btnHistCopiar.textContent = antes; }, 2000);
+  });
+  chkHist.addEventListener('change', () => {
+    guardarHist = chkHist.checked;
+    try { localStorage.setItem('bel-hist-on', guardarHist ? '1' : '0'); } catch (e) {}
+    desenharHist();
+  });
+  // Apagar tudo: primeiro toque pede confirmação (some sozinho depois de 4 s).
+  let histTimer = null;
+  const desarmarHist = () => { clearTimeout(histTimer); btnHistLimpar.classList.remove('confirmar'); histLimparTxt.textContent = 'Apagar histórico'; };
+  btnHistLimpar.addEventListener('click', () => {
+    if (!historico.length) return;
+    if (!btnHistLimpar.classList.contains('confirmar')) {
+      btnHistLimpar.classList.add('confirmar');
+      histLimparTxt.textContent = `Toque de novo para apagar ${historico.length}`;
+      histTimer = setTimeout(desarmarHist, 4000);
+      return;
+    }
+    desarmarHist();
+    historico = []; gravarHist(historico);
+    atualizarAtalhoHist(); desenharHist();
+  });
+  // Outra aba baixou algo: atualiza aqui também.
+  window.addEventListener('storage', (ev) => {
+    if (ev.key !== HIST) return;
+    historico = lerHist(); atualizarAtalhoHist();
+    if (!telaHist.hidden) desenharHist();
+  });
+
   try { const v = localStorage.getItem('bel-hd'); if (v !== null) chkHd.checked = v === '1'; } catch (e) {}
   chkHd.addEventListener('change', () => { try { localStorage.setItem('bel-hd', chkHd.checked ? '1' : '0'); } catch (e) {} itens.forEach(atualizar); atualizarPainel(); });
 
@@ -136,50 +260,86 @@
   btnBuscar.addEventListener('click', () => {
     const { novos } = analisar();
     campo.value = ''; contar();
-    if (!novos.length) return;
-    novos.forEach((url) => { const item = { uid: ++seq, url, status: 'fila', dados: null, erro: '', prog: 0 }; itens.push(item); criarCard(item); });
-    atualizarPainel();
-    mostrarResultado();
-    processar();
+    adicionarNaFila(novos);
   });
 
-  // ---------- troca de tela: início ⇄ resultado ----------
-  // A tela de resultado entra no histórico, então o "voltar" do celular retorna para o início.
+  // Põe links na fila (os que já estão nela são ignorados) e abre a tela de resultado.
+  function adicionarNaFila(urls) {
+    const naFila = new Set(itens.map((i) => chave(i.url)));
+    const novos = urls.filter((u) => !naFila.has(chave(u)));
+    novos.forEach((url) => { const item = { uid: ++seq, url, status: 'fila', dados: null, erro: '', prog: 0 }; itens.push(item); criarCard(item); });
+    if (!itens.length) return;
+    atualizarPainel(); contar();
+    mostrarResultado();
+    if (novos.length) processar();
+  }
+
+  // ---------- troca de tela: início ⇄ resultado ⇄ histórico ----------
+  // As telas de resultado e histórico entram no histórico do navegador, então o "voltar" do celular retorna para o início.
   const naTelaResultado = () => document.body.classList.contains('tela-resultado');
+  const naTelaHist = () => document.body.classList.contains('tela-historico');
+  const foraDoInicio = () => naTelaResultado() || naTelaHist();
+
+  function esconderTudo() {
+    document.body.classList.remove('tela-resultado', 'tela-historico');
+    resultado.hidden = true; telaHist.hidden = true;
+  }
 
   function mostrarResultado(empilhar = true) {
     if (!itens.length) return;
-    if (empilhar && !naTelaResultado()) history.pushState({ tela: 'resultado' }, '');
+    if (empilhar && !naTelaResultado()) {
+      if (naTelaHist()) history.replaceState({ tela: 'resultado' }, ''); else history.pushState({ tela: 'resultado' }, '');
+    }
+    esconderTudo();
     document.body.classList.add('tela-resultado');
     resultado.hidden = false;
     window.scrollTo(0, 0);
   }
 
+  function mostrarHist(empilhar = true) {
+    historico = lerHist();
+    if (empilhar && !naTelaHist()) {
+      if (naTelaResultado()) history.replaceState({ tela: 'historico' }, ''); else history.pushState({ tela: 'historico' }, '');
+    }
+    esconderTudo();
+    document.body.classList.add('tela-historico');
+    telaHist.hidden = false;
+    histBusca.value = '';
+    desenharHist();
+    window.scrollTo(0, 0);
+  }
+
   function mostrarInicio() {
-    document.body.classList.remove('tela-resultado');
-    resultado.hidden = true;
+    esconderTudo();
+    desarmarHist();
     const n = itens.length;
     btnVerFila.hidden = n === 0;
     btnVerFila.textContent = `Ver sua fila (${plural(n, 'vídeo', 'vídeos')}) →`;
+    atualizarAtalhoHist();
   }
 
-  // Sai da tela de resultado; se ela estiver no histórico, volta uma página para não deixar entrada sobrando.
+  // Sai da tela de resultado/histórico; se ela estiver no histórico do navegador, volta uma página para não deixar entrada sobrando.
   function voltarAoInicio() {
-    if (history.state?.tela === 'resultado') history.back();
+    if (history.state?.tela === 'resultado' || history.state?.tela === 'historico') history.back();
     mostrarInicio();
   }
 
   window.addEventListener('popstate', (ev) => {
-    if (ev.state?.tela === 'resultado' && itens.length) mostrarResultado(false); else mostrarInicio();
+    if (ev.state?.tela === 'resultado' && itens.length) mostrarResultado(false);
+    else if (ev.state?.tela === 'historico') mostrarHist(false);
+    else mostrarInicio();
   });
 
   // Links do menu (#como-usar, #perguntas…) precisam das seções do início visíveis.
   document.addEventListener('click', (ev) => {
     const a = ev.target.closest('a[href^="#"]');
-    if (a && naTelaResultado()) { mostrarInicio(); history.replaceState(null, ''); }
+    if (a && foraDoInicio()) { mostrarInicio(); history.replaceState(null, ''); }
   });
 
   btnVerFila.addEventListener('click', () => mostrarResultado());
+  btnVerHist.addEventListener('click', () => mostrarHist());
+  btnAbrirHist.addEventListener('click', () => mostrarHist());
+  $('hist-voltar').addEventListener('click', () => { if (itens.length) mostrarResultado(); else voltarAoInicio(); });
   btnMais.addEventListener('click', () => { voltarAoInicio(); window.scrollTo(0, 0); campo.focus({ preventScroll: true }); });
   // Limpar lista: com mais de um vídeo, o primeiro toque pede confirmação (some sozinho depois de 4 s).
   const novoTxt = $('novo-txt');
@@ -218,7 +378,12 @@
         // POST: o link vai no corpo da requisição, nunca no endereço (endereços ficam em logs e histórico).
         const r = await fetch('/api/info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: item.url }) });
         const j = await r.json();
-        if (j.ok) { item.dados = j; item.status = 'pronto'; break; }
+        if (j.ok) {
+          item.dados = j; item.status = 'pronto';
+          // Já baixou esse vídeo antes? Avisa no card (sem impedir de baixar de novo).
+          item.ja = historico.find((h) => h.id === idDe(item))?.em || 0;
+          break;
+        }
         if (j.limite && tentativa < 4) { await sleep(1600 + tentativa * 800); continue; }
         item.status = 'erro'; item.erro = j.erro || 'Não foi possível buscar este vídeo.'; break;
       } catch (e) {
@@ -299,6 +464,7 @@
       }
       if (d.data) partes.push(dataIso(d.data).split('-').reverse().join('/'));
       meta += partes.filter(Boolean).map((t) => `<span>${t}</span>`).join('<span aria-hidden="true">·</span>');
+      if (item.ja && item.status === 'pronto') meta += `<span class="chip ja" title="Você já baixou este vídeo">Já baixado ${diaDe(item.ja).toLowerCase()}</span>`;
     }
     let topo = `<div class="url">${esc(item.url.replace(/^https?:\/\//, ''))}</div>`;
     if (d) {
@@ -396,6 +562,7 @@
         if (k < arqs.length - 1) await sleep(600);
       }
       item.status = 'baixado';
+      registrar(item, modo);
     } catch (e) {
       item.status = 'erro'; item.erro = 'Falhou ao baixar o arquivo. Tente de novo.';
     }
@@ -478,7 +645,7 @@
         } catch (e) { ok = false; }
       }
       feitos++;
-      if (ok) { item.status = 'baixado'; } else { falhas++; item.status = 'erro'; item.erro = 'Falhou ao baixar o arquivo. Tente de novo.'; }
+      if (ok) { item.status = 'baixado'; registrar(item, modo); } else { falhas++; item.status = 'erro'; item.erro = 'Falhou ao baixar o arquivo. Tente de novo.'; }
       atualizar(item);
       barra.style.width = (feitos / lote.length * 100) + '%';
     }
@@ -512,4 +679,5 @@
   }));
 
   contar();
+  atualizarAtalhoHist();
 })();

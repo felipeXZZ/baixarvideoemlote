@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Comentários | Baixa em Lote</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F3F4F7">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<script src="/tema.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/estilo.css">
+<style>
+.area { max-width: 760px; margin-inline: auto; padding-block: 40px 0; display: grid; gap: 18px; }
+.area h1 { font: 800 clamp(28px, 5.4vw, 40px)/1.1 var(--font-display); letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.area .sub { color: var(--muted); margin: 0; max-width: 62ch; }
+.bloco {
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px;
+  display: grid; gap: 12px; box-shadow: 0 1px 2px rgb(0 0 0 / .04), 0 12px 32px -16px rgb(20 22 40 / .18);
+}
+.rot { font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+textarea, input[type="text"], input[type="password"], select {
+  width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px;
+  background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body);
+}
+textarea { min-height: 150px; resize: vertical; font: 13px/1.6 var(--font-mono); }
+.linha { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; justify-content: space-between; }
+.campo { display: grid; gap: 6px; flex: 1 1 220px; }
+.campo.estreito { flex: 0 1 180px; }
+.contador { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.contador b { color: var(--ink); }
+.msg { margin: 0; font-size: 13.5px; }
+.msg.erro { color: var(--err); }
+.msg.espera { color: var(--wait); }
+.barra { height: 6px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.barra i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+
+.login { max-width: 420px; margin-inline: auto; }
+.login form { display: grid; gap: 12px; }
+
+.videos { display: grid; gap: 10px; }
+.video { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; background: var(--bg); }
+.video .topo-v { display: flex; gap: 10px; justify-content: space-between; align-items: baseline; }
+.video .tit { font-weight: 600; font-size: 14.5px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.video .num { flex: none; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.video .autor { font-size: 13px; color: var(--muted); }
+.video ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.video li { font-size: 13.5px; display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+.video li .cur { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; white-space: nowrap; }
+.classe {
+  font: 600 10.5px/1 var(--font-body); letter-spacing: .04em; text-transform: uppercase; padding: 5px 7px; border-radius: 999px;
+  background: var(--line); color: var(--muted); align-self: start; white-space: nowrap; text-align: center; min-width: 64px;
+}
+.c-objecao { background: var(--err-soft); color: var(--err); }
+.c-dor { background: var(--wait-soft); color: var(--wait); }
+.c-duvida { background: var(--accent-soft); color: var(--accent); }
+.c-desejo { background: var(--ok-soft); color: var(--ok); }
+.c-relato { background: color-mix(in srgb, var(--accent-2) 16%, transparent); color: var(--accent-2); }
+.removidos summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.removidos summary:hover { color: var(--ink); }
+.removidos ul { margin-top: 8px; max-height: 320px; overflow: auto; color: var(--muted); }
+.removidos .classe { min-width: 0; }
+.video .estado { font-size: 12.5px; color: var(--wait); }
+.video .estado.ok { color: var(--ok); }
+.video .estado.ruim { color: var(--err); }
+
+.final { display: grid; gap: 10px; }
+.grande-btn {
+  justify-content: center; padding: 16px; font-size: 16px; border: 0; border-radius: 12px; width: 100%;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--accent-2)));
+  color: var(--accent-ink); box-shadow: 0 10px 24px -12px var(--accent);
+}
+.grande-btn:hover { filter: brightness(1.07); }
+.acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.acoes > * { flex: 1 1 0; justify-content: center; }
+.passo-a-passo { margin: 0; padding-left: 20px; color: var(--muted); font-size: 14px; display: grid; gap: 4px; }
+.sair { justify-self: end; font-size: 13px; }
+@media (max-width: 560px) { .area { padding-top: 24px; } .acoes > * { flex: 1 1 100%; } }
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="Baixa em Lote, início">
+      <svg width="30" height="30" viewBox="0 0 34 34" aria-hidden="true">
+        <rect x="1" y="1" width="32" height="32" rx="9" fill="var(--accent)"/>
+        <path d="M11 9h8M11 13.5h12M11 18h10" stroke="var(--accent-ink)" stroke-width="2.2" stroke-linecap="round" opacity=".55"/>
+        <path d="M17 17v9m0 0-4-4m4 4 4-4" stroke="var(--accent-ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <span>Baixa em Lote</span>
+    </a>
+    <span></span>
+    <button class="tema-btn" type="button" data-tema-btn aria-label="Mudar o tema">
+      <svg class="ico-lua" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+      <svg class="ico-sol" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- Tela de senha -->
+  <section class="area login" id="tela-login">
+    <h1>Área restrita</h1>
+    <div class="bloco">
+      <form id="form-login">
+        <label class="rot" for="senha">Senha</label>
+        <input type="password" id="senha" autocomplete="current-password" required>
+        <p class="msg erro" id="erro-login" hidden></p>
+        <button class="primario" type="submit" id="entrar" style="justify-content:center">Entrar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Ferramenta -->
+  <section class="area" id="tela-app" hidden>
+    <button class="discreto sair" type="button" id="sair">Sair</button>
+    <h1>Comentários → ideias de oferta</h1>
+    <p class="sub">Cole os links dos vídeos. O site puxa os comentários, separa os que mostram dor, dúvida ou desejo e monta um texto pronto para você colar no Claude e receber ofertas lowticket, com subnicho e ângulo.</p>
+
+    <div class="bloco">
+      <label class="rot" for="links">Links do TikTok</label>
+      <textarea id="links" spellcheck="false" placeholder="https://www.tiktok.com/@perfil/video/123…&#10;https://vm.tiktok.com/…"></textarea>
+      <div class="linha">
+        <div class="campo">
+          <label class="rot" for="nicho">Seu nicho ou o que você vende (opcional)</label>
+          <input type="text" id="nicho" placeholder="ex.: confeitaria caseira, emagrecimento pós-parto…">
+        </div>
+        <div class="campo estreito">
+          <label class="rot" for="qtd">Comentários por vídeo</label>
+          <select id="qtd">
+            <option value="100">até 100</option>
+            <option value="200" selected>até 200</option>
+            <option value="500">até 500</option>
+            <option value="1000">até 1000</option>
+          </select>
+        </div>
+      </div>
+      <div class="linha">
+        <span class="contador" id="contador"><b>0</b> links</span>
+        <button class="primario" type="button" id="puxar" disabled>Puxar comentários</button>
+      </div>
+      <p class="msg espera" id="aviso" hidden></p>
+      <div class="barra" id="barra" hidden><i></i></div>
+    </div>
+
+    <div class="videos" id="videos"></div>
+
+    <div class="bloco final" id="final" hidden>
+      <div class="contador" id="resumo"></div>
+      <button class="grande-btn" type="button" id="copiar">Copiar texto para o Claude</button>
+      <div class="acoes">
+        <a class="btn" href="https://claude.ai/new" target="_blank" rel="noopener noreferrer">Abrir o Claude</a>
+        <button type="button" id="baixar-txt">Baixar como .txt</button>
+      </div>
+      <ol class="passo-a-passo">
+        <li>Toque em <b>Copiar texto para o Claude</b>.</li>
+        <li>Abra o Claude, cole na conversa e envie.</li>
+        <li>Ele devolve o mapa de dores e 5 ofertas com subnicho, ângulo, preço e ganchos.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<script src="/comentarios-app.js"></script>
+</body>
+</html>

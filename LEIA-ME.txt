@@ -29,6 +29,12 @@ Arquivos
   dev.mjs        → servidor local do npm run dev
   estilo.css     → cores (tema claro/escuro), menu do topo, botões e rodapé, usados em todas as páginas
   tema.js        → botão de tema claro/escuro (segue o aparelho e guarda a escolha)
+  comentarios.html → área com senha (não aparece no menu nem no Google): puxa os comentários
+                    dos vídeos e monta um texto para colar no Claude e receber ideias de oferta
+  comentarios-app.js → a lógica dessa área
+  api/comentarios.js → puxa os comentários; só responde com a senha certa
+                    (a senha não fica escrita no código, só o hash dela; para trocar, gere o
+                    SHA-256 da senha nova e substitua o SENHA_HASH)
   privacidade.html, termos.html, contato.html → páginas do rodapé
   og.png         → imagem que aparece ao compartilhar o link (WhatsApp etc.)
   favicon.svg, apple-touch-icon.png → ícones da aba e da tela inicial do iPhone
